@@ -1,0 +1,26 @@
+# secrets and local state (never commit these)
+.env
+config.yaml
+config.yaml.bak
+state.db
+state.db-*
+agent.lock
+runs/
+models/
+.sdk/
+guardian_run/
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+*.egg-info/
+dist/
+build/
+
+# local files
+*.log
+*.pdf
+.DS_Store
+_backup_*/

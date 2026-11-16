@@ -1,0 +1,50 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "RigGuardian"
+version = "0.1.0"
+description = "A background agent that runs, watches and checkpoints PyTorch training jobs on your own GPU machine: any number of GPUs, NVIDIA, AMD, Intel or Apple Silicon"
+readme = "README.md"
+authors = [{ name = "William" }]
+requires-python = ">=3.11"
+keywords = ["pytorch", "gpu", "nvidia", "amd", "intel", "apple-silicon", "training", "checkpointing", "telegram", "job-queue"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Environment :: Console",
+  "Intended Audience :: Science/Research",
+  "Operating System :: POSIX :: Linux",
+  "Operating System :: MacOS",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Topic :: Scientific/Engineering :: Artificial Intelligence",
+  "Topic :: System :: Monitoring",
+]
+dependencies = [
+  "nvidia-ml-py>=12.535",
+  "python-telegram-bot>=20,<23",
+  "pydantic>=2.5",
+  "pyyaml>=6",
+  "matplotlib>=3.7",
+  "httpx>=0.25",
+]
+
+[project.optional-dependencies]
+# The agent itself does not need PyTorch; your training environments do.
+dev = ["pytest>=8"]
+
+[project.scripts]
+rig-guardian = "guardian.cli:main"
+
+[tool.setuptools]
+packages = ["guardian", "guardian.examples"]
+py-modules = ["guardian_sdk"]  # `from guardian_sdk import Guardian` outside the agent too
+
+[tool.setuptools.package-data]
+"guardian.examples" = ["*.yaml", "*.example"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

@@ -1,0 +1,5 @@
+include README.md
+include guardian_sdk.py
+recursive-include deploy *
+recursive-include tests *.py
+recursive-include guardian/examples *.yaml *.example
