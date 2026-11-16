@@ -1,0 +1,17 @@
+# Example template: copy to <home>/templates/ and point script/python at your own project.
+name: cifar-resnet
+description: ResNet on CIFAR-10
+script: ~/projects/cifar/train.py
+python: ~/projects/cifar/.venv/bin/python
+gpus: 1                       # GPUs per job; >1 runs under torchrun (DDP)
+# min_gpu_mem_gb: 12          # optional: only cards with at least this much memory
+# gpu_match: "4090"           # optional: only cards whose name contains this
+params_millions: 11           # for the static memory check
+best_metric: val_loss         # which logged metric decides "best"
+mode: min                     # min or max
+defaults: {lr: 1.0e-3, epochs: 30, micro_batch: 256, grad_accum: 1, seed: 0}
+overridable:
+  lr:          {type: float, min: 1.0e-6, max: 1.0e-1}
+  epochs:      {type: int, min: 1, max: 300}
+  micro_batch: {type: int, choices: [32, 64, 128, 256, 512]}
+  seed:        {type: int, min: 0, max: 100000}
