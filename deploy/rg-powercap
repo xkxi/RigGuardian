@@ -1,0 +1,31 @@
+#!/bin/sh
+# Root-owned helper for optional power capping of NVIDIA cards. The daemon never runs as
+# root; it may only call this, through a sudoers line such as:
+#   you ALL=(root) NOPASSWD: /usr/local/sbin/rg-powercap
+# Install: sudo install -o root -g root -m 755 deploy/rg-powercap /usr/local/sbin/rg-powercap
+# Then set thermal.power_cap.enabled: true and watts: in config.yaml.
+# Usage: rg-powercap <nvidia-gpu-index> <watts|reset>
+set -eu
+# this runs as root: never use the caller's PATH to find nvidia-smi
+PATH=/usr/sbin:/usr/bin:/sbin:/bin
+export PATH
+[ $# -eq 2 ] || { echo "usage: rg-powercap <nvidia-gpu-index> <watts|reset>" >&2; exit 2; }
+gpu=$1; w=$2
+is_num() { case "$1" in ''|*[!0-9]*) return 1;; esac; }
+is_num "$gpu" || { echo "bad gpu index" >&2; exit 2; }
+# first line only, digits before the decimal point; "[N/A]" and errors come out as non-numbers
+q() { nvidia-smi -i "$gpu" --query-gpu="$1" --format=csv,noheader,nounits 2>/dev/null | head -n 1 | tr -d ' ' | cut -d. -f1; }
+if [ "$w" = reset ]; then
+  w=$(q power.default_limit)
+  is_num "$w" || { echo "GPU $gpu does not report a default power limit; nothing changed" >&2; exit 4; }
+fi
+is_num "$w" || { echo "bad wattage" >&2; exit 2; }
+min=$(q power.min_limit); max=$(q power.max_limit)
+if ! is_num "$min" || ! is_num "$max"; then
+  echo "GPU $gpu does not report a power-limit range (min '$min', max '$max'); nothing changed" >&2
+  exit 4
+fi
+if [ "$w" -lt "$min" ] || [ "$w" -gt "$max" ]; then
+  echo "wattage $w outside the card's range $min-$max" >&2; exit 3
+fi
+exec nvidia-smi -i "$gpu" -pl "$w"
